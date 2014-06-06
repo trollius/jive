@@ -1,6 +1,6 @@
 
 #conditional prior on sd of species-specific normal likelihoods under GBM model
-LikBM<-function(pars, sigma.val, tree){#M - ancestral mean, S - trend, S0 - starting point of a trend, ti - total phylogenetic time, sig.sq  - sigma^2 (phylogenetic variance)
+likBM<-function(pars, sigma.val, tree){#M - ancestral mean, S - trend, S0 - starting point of a trend, ti - total phylogenetic time, sig.sq  - sigma^2 (phylogenetic variance)
 	
 	vcv.m  <- vcv(tree)
 	Y      <- as.matrix(sigma.val)

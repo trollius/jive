@@ -1,7 +1,7 @@
 library(geiger)
 
 ## tranform simmap into map, input - simmap object
-RelSim <- function(x) {
+relSim <- function(x) {
 	
 	foo<-function(x) {
 		x/sum(x)
@@ -15,24 +15,42 @@ RelSim <- function(x) {
 
 # traits - matrix, where lines are vector of observations for each species, with NA for no data.
 # phy - simmap object (OUM) or phylo object (for BM or OU1)
-MakeJive <- function(phy, traits, model="BM"){
+makeJive <- function(phy, traits, model="BM"){
+
+	if (class(phy) != "phylo") {
+		if (model %in% c("BM", "OU1")) {
+			stop("'phy' should be an object of class 'phylo'")
+		} else {
+			stop("'phy' should be a 'simmap' object")
+		}
+	}
+	
+	if (class(traits) != "matrix") {
+		stop("'traits' should be an object of class 'matrix'")
+	}
+	
+	if (!(model %in% c("BM", "OU1", "OUM"))) {
+		stop("Only BM, OU1, and OUM models are supported")
+	}
 	
 	ll <- list()
 	td <- treedata(phy, traits)
 	
 	if (model %in% c("BM", "OU1")) { # this is needed to overcome phytools limitation about making simmap obj from a trait with a single regime
 		# td$phy$node.label <- rep("1", n - 1)
-		ll[["map"]]    <- matrix(rep(1, (n * 2) - 2))
+		ll[['map']]    <- matrix(rep(1, (n * 2) - 2))
 	} else {
-		ll[["map"]]    <- RelSim(td$phy)
+		ll[['map']]    <- relSim(td$phy)
 	}
 			
-	ll[["traits"]] <- td$data
-	ll[["counts"]] <- apply(td$data, 1, function (x) {sum( !is.na(x) )})
-	ll[["tree"]]   <- td$phy
-	ll[["vcv"]]    <- vcv(td$phy)
-	ll[["model"]]  <- model
-	ll[["nreg"]]   <- dim(td$phy)[2]
+	ll[['traits']] <- td$data
+	ll[['counts']] <- apply(td$data, 1, function (x) {sum( !is.na(x) )})
+	ll[['tree']]   <- td$phy
+	ll[['vcv']]    <- vcv(td$phy)
+	ll[['model']]  <- model
+	ll[['nreg']]   <- dim(td$phy)[2]
+	
+	class(ll) <- 'jive'
 	
 	return(ll)
 	

@@ -7,12 +7,14 @@ library(ape)
 library(MASS)
 library(phytools)
 
-source("c:\\thematic\\rpackage\\source_scripts\\anna\\lik_mvn.R")
-source("c:\\thematic\\rpackage\\source_scripts\\anna\\lik_bm.R")
-source("c:\\thematic\\rpackage\\source_scripts\\anna\\lik_ou.R")
-source("c:\\thematic\\rpackage\\source_scripts\\anna\\lik_multinorm.R")
-source("c:\\thematic\\rpackage\\source_scripts\\anna\\priors.R")
-source("c:\\thematic\\rpackage\\source_scripts\\anna\\utils.R")
+source("lik_mvn.R")
+source("lik_bm.R")
+source("lik_ou.R")
+source("lik_multinorm.R")
+source("priors.R")
+source("proposals.R")
+source("utils.R")
+source("jive_prep.R")
 
 
 # MCMC MAIN ALGORITHM
@@ -34,7 +36,7 @@ jiveMCMC <- function(jive, log.file="jive_mcmc.log", sampling.freq=1000, print.f
 	it <- (ngen - burnin)/ncat 
 		 if (ncat > 1) {
 			  # here we get the heating parameter for a chain - scaling classes (MIGRATE)
-			  beta.class <- DefineClasses(ncat, beta.param) 
+			  beta.class <- defClasses(ncat, beta.param) 
 		 } else {
 			  beta.class <- 1
 		 }
@@ -51,10 +53,10 @@ jiveMCMC <- function(jive, log.file="jive_mcmc.log", sampling.freq=1000, print.f
 						hasting.ratio <- 0
 						if (real.iter == 1){
 							 # initialize update frequencies
-							 update.freq <- InitUpdateFreq(jive, update.freq)
+							 update.freq <- initUpdateFreq(update.freq)
 							 
 							 # initialize window sizes
-							 ws <- InitWinSize(jive)
+							 ws <- initWinSize(jive)
 													 
 							 # initialize MCMC parameters
 							 mspA  <- apply(traits, 1, mean, na.rm = T) # initialize means for species
@@ -82,10 +84,10 @@ jiveMCMC <- function(jive, log.file="jive_mcmc.log", sampling.freq=1000, print.f
 							
 							 if (runif(1) < 0.5) {
 								  # updating random 5 values from the vector of means 
-								  msp[ind] <- SlidingWinUnconst(mspA[ind], ws$msp[ind]) 
+								  msp[ind] <- slidingWinUnconst(mspA[ind], ws$msp[ind]) 
 							 } else {
 								  # updating random 5 values from the vector of sigmas
-								  ssp[ind] <- SlidingWin(sspA[ind], ws$ssp[ind], 100)  
+								  ssp[ind] <- slidingWin(sspA[ind], ws$ssp[ind], 100)  
 							 }
 						}
 						# update MVN parameters
@@ -93,33 +95,33 @@ jiveMCMC <- function(jive, log.file="jive_mcmc.log", sampling.freq=1000, print.f
 						
 							 if (runif(1) < 0.5){
 								  # updating mmvn - negative values allowed
-								  mmvn <- SlidingWinUnconst(mmvnA, ws$mvn[1]) 
+								  mmvn <- slidingWinUnconst(mmvnA, ws$mvn[1]) 
 							 } else {
 								  # updating smvn
-								  smvn <- SlidingWin(smvnA, ws$mvn[2], 100) 
+								  smvn <- slidingWin(smvnA, ws$mvn[2], 100) 
 							 }
 							 
 						} else {# update BM parameters 
 												 
 							 ind <- sample(1:length(ws$svn), 1)
-							 bmou[ind] <- SlidingWin(bmouA[ind], ws$svn[ind], 100) # updating bmou parameters
+							 bmou[ind] <- slidingWin(bmouA[ind], ws$svn[ind], 100) # updating bmou parameters
 							 
 						}
 						
 
 						# Hyperpriors on all parameters level
-						# mean of MVN can be negative due to PCA - mean Hprior
-						Hprior <- dunif(mmvn, min=-10000, max=10000, log=TRUE)
+						# mean of MVN can be negative due to PCA - mean hprior
+						hprior <- dunif(mmvn, min=-10000, max=10000, log=TRUE)
 			
 						if (model != "BM") { #OU hpriors
 								  #here the entire vector is built (mean MVN, sig.sq MVN, alpha
-								  Hprior <- c(Hprior, dgamma(c(smvn,bmou), shape=1.1, 
+								  hprior <- c(hprior, dgamma(c(smvn,bmou), shape=1.1, 
 											 scale=5, log=TRUE)) 
 
 						} else {# BM hpriors
 								  #NULL is for prior on mu, which is not sampled
 									
-								 Hprior <- c(Hprior, dgamma(c(smvn, bmou), 
+								 hprior <- c(hprior, dgamma(c(smvn, bmou), 
 											 shape=1.1, scale=5, log=TRUE))  
 											 
 						}
@@ -132,22 +134,22 @@ jiveMCMC <- function(jive, log.file="jive_mcmc.log", sampling.freq=1000, print.f
 						
 						# do this for first step always (because we need to have all probabiliiles)     
 						if (r < update.freq[1] || real.iter == 1) { 
-							 Lik <- LikMultinorm(msp, ssp, traits, counts) # traits, counts
-							 priorMVN <- LikMVN(c(mmvn,smvn), msp, tree) # tree Conditional prior level
+							 Lik <- likMultinorm(msp, ssp, traits, counts) # traits, counts
+							 priorMVN <- likMVN(c(mmvn,smvn), msp, tree) # tree Conditional prior level
 							 
 							 if (model != "BM"){
-								  priorBMOU <- LikOU(bmou, ssp, tree, map) #  tree, map
+								  priorBMOU <- likOU(bmou, ssp, tree, map) #  tree, map
 							 } else {
-								  priorBMOU <- LikBM(bmou, ssp, tree) # tree
+								  priorBMOU <- likBM(bmou, ssp, tree) # tree
 							 } 
 							 
 						} else if (r<update.freq[2]) {
-							 priorMVN <- LikMVN(c(mmvn, smvn), msp, tree)
+							 priorMVN <- likMVN(c(mmvn, smvn), msp, tree)
 						} else {
 							 if (model != "BM") {
-								  priorBMOU <- LikOU(bmou, ssp, tree, map) #  tree, map
+								  priorBMOU <- likOU(bmou, ssp, tree, map) #  tree, map
 							 } else {
-								  priorBMOU <- LikBM(bmou, ssp, tree) # tree
+								  priorBMOU <- likBM(bmou, ssp, tree) # tree
 							 } # Likelihood level
 						}
 
@@ -158,10 +160,10 @@ jiveMCMC <- function(jive, log.file="jive_mcmc.log", sampling.freq=1000, print.f
 							 LikA <- Lik
 							 priorMVNA <- priorMVN
 							 priorBMOUA <- priorBMOU
-							 HpriorA <- Hprior
-							 postA <- (sum(Lik) + priorMVN + priorBMOU * temperature + sum(Hprior))
+							 hpriorA <- hprior
+							 postA <- (sum(Lik) + priorMVN + priorBMOU * temperature + sum(hprior))
 						}
-						post <- (sum(Lik) + priorMVN + priorBMOU * temperature + sum(Hprior))
+						post <- (sum(Lik) + priorMVN + priorBMOU * temperature + sum(hprior))
 						# acceptance probability
 						tryCatch(
 						{
@@ -170,7 +172,7 @@ jiveMCMC <- function(jive, log.file="jive_mcmc.log", sampling.freq=1000, print.f
 							 LikA = Lik
 							 priorMVNA = priorMVN
 							 priorBMOUA = priorBMOU
-							 HpriorA = Hprior
+							 hpriorA = hprior
 							 postA = post
 							 mspA = msp
 							 sspA = ssp
@@ -205,7 +207,7 @@ jiveMCMC <- function(jive, log.file="jive_mcmc.log", sampling.freq=1000, print.f
 						
 						if (real.iter %% sampling.freq == 0 & real.iter >= burnin) {
 							 cat(sprintf("%s\t", c(real.iter, postA, sum(LikA),
-							 priorMVNA, priorBMOUA, sum(HpriorA), mmvnA, smvnA,
+							 priorMVNA, priorBMOUA, sum(hpriorA), mmvnA, smvnA,
 							 bmouA, mspA, sspA, (acc/iteration), temperature)),
 							 "\n", append=TRUE, file=log.file) 
 						}

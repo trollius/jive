@@ -1,49 +1,46 @@
 
-
-# UPDATE PARAMETERS
-# sliding window
-SlidingWin <- function(i, d, M) {
-	# i = current value; d = window size; M = max allowed value 
-	ii <- abs(i + (runif(length(i), 0, 1) - 0.5) * d) #MrBayes trick
-	# reflection at 0 and M
-	#if (ii>M) {ii=abs((M-(ii-M)))}
-	#if (ii>M) {ii=i}
-	return(ii)
-}
-
-# allowing negative values for proposal	
-SlidingWinUnconst <- function(i, d) {
-     # i = current value; d = window size; M = max allowed value 
-     ii <- i + (runif(length(i), 0, 1) - 0.5) * d #MrBayes trick
-     ii
-}     
-     
-# ronquist multiplier
-MultiplierProposal <- function(i, d, u) {
-     lambda <- 2 * log(d)
-     m <- exp(lambda * (u - 0.5))
-     ii <- i * m
-     ii
-}
-
 # PRIORS (they return log prior probabilities)
-PriorGamma <- function(i, a, b) {
-     # un-normalized gamma with shape parameters a, b
-     # i parameter (or vector of parameters)
-     (a - 1) * log(i) + (-b * i)
+priorGamma <- function(i, a, b) {
+	# Un-normalized gamma prior with shape parameters a, b.
+	# 
+	# Args:
+	# 	i:  vector of parameters or a parameter
+	#	a:  a parameter of a gamma distribution
+	#	b:  b parameter of a gamma distribution
+	# 
+	# Returns:
+	#	Vector of prior(s).
+
+    (a - 1) * log(i) + (-b * i)
 }
 
-PriorExponential <- function(i, l) {
-     # un-normalized exponential with mean l
-     # i parameter (or vector of parameters)
+priorExponential <- function(i, l) {
+	# Un-normalized exponential prior with mean l.
+	# 
+	# Args:
+	# 	i:  vector of parameters or a parameter
+	#	l:  shape parameter of an exponential distribution
+	# 
+	# Returns:
+	#	Vector of prior(s).
+
      -(1./l) * i
 }
 
-PriorUniform <- function(i, m, M) {
-     # uniform prior with boundaries m, M
-     if (i < m || i > M) {
-          p <- -Inf
-	 } else {
-          p <- -log(M - m)
-     }
+priorUniform <- function(i, m, M) {
+	# Uniform prior with boundaries m, M.
+	# 
+	# Args:
+	#  	i:  vector of parameters or a parameter
+	# 	m:  minimum boundary
+	#	M:  maximum boundary
+	# 
+	# Returns:
+	#	Vector of prior(s).
+    # 
+    if (i < m || i > M) {
+         p <- -Inf
+	} else {
+         p <- -log(M - m)
+    }
 }
