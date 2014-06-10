@@ -11,7 +11,7 @@ source("lik_mvn.R")
 source("lik_bm.R")
 source("lik_ou.R")
 source("lik_multinorm.R")
-source("priors.R")
+source("hpriors.R")
 source("proposals.R")
 source("utils.R")
 source("jive_prep.R")
@@ -56,14 +56,7 @@ jiveMCMC <- function(jive, log.file="jive_mcmc.log", sampling.freq=1000, print.f
 							 update.freq <- initUpdateFreq(update.freq)
 							 
 							 # initialize window sizes
-							 ws_ss <- initWinSize(jive)
-							 ws_m
-							 ws_s
-							 
-							 
-							 ip_ss <- 
-							 ip_m <-
-							 ip_s <- 
+							 ws <- initWinSize(jive)
 													 
 							 # initialize MCMC parameters
 							 mspA  <- apply(traits, 1, mean, na.rm = T) # initialize means for species
@@ -91,10 +84,10 @@ jiveMCMC <- function(jive, log.file="jive_mcmc.log", sampling.freq=1000, print.f
 							
 							 if (runif(1) < 0.5) {
 								  # updating random 5 values from the vector of means 
-								  msp[ind] <- slidingWinUnconst(mspA[ind], ws$msp[ind]) 
+								  msp[ind] <- slidingWin(mspA[ind], ws$msp[ind]) 
 							 } else {
 								  # updating random 5 values from the vector of sigmas
-								  ssp[ind] <- slidingWin(sspA[ind], ws$ssp[ind], 100)  
+								  ssp[ind] <- abs(slidingWin(sspA[ind], ws$ssp[ind]))
 							 }
 						}
 						# update MVN parameters
@@ -102,16 +95,16 @@ jiveMCMC <- function(jive, log.file="jive_mcmc.log", sampling.freq=1000, print.f
 						
 							 if (runif(1) < 0.5){
 								  # updating mmvn - negative values allowed
-								  mmvn <- slidingWinUnconst(mmvnA, ws$mvn[1]) 
+								  mmvn <- slidingWin(mmvnA, ws$mvn[1]) 
 							 } else {
 								  # updating smvn
-								  smvn <- slidingWin(smvnA, ws$mvn[2], 100) 
+								  smvn <- abs(slidingWin(smvnA, ws$mvn[2]) )
 							 }
 							 
 						} else {# update BM parameters 
 												 
 							 ind <- sample(1:length(ws$svn), 1)
-							 bmou[ind] <- slidingWin(bmouA[ind], ws$svn[ind], 100) # updating bmou parameters
+							 bmou[ind] <- abs(slidingWin(bmouA[ind], ws$svn[ind])) # updating bmou parameters
 							 
 						}
 						
@@ -141,15 +134,23 @@ jiveMCMC <- function(jive, log.file="jive_mcmc.log", sampling.freq=1000, print.f
 						
 						# do this for first step always (because we need to have all probabiliiles)     
 						if (r < update.freq[1] || real.iter == 1) { 
-							 lik <- jive$lik(msp, ssp, traits, counts) # traits, counts
-							 priormeans <- jive$evomod_mean$lik_m(c(mmvn,smvn), msp, tree) # tree Conditional prior level
-							 priorvar <- jive$evomod_mean$lik_v(bmou, ssp, tree, map)
-
+							 Lik <- likMultinorm(msp, ssp, traits, counts) # traits, counts
+							 priorMVN <- likMVN(c(mmvn,smvn), msp, tree) # tree Conditional prior level
+							 
+							 if (model != "BM"){
+								  priorBMOU <- likOU(bmou, ssp, tree, map) #  tree, map
+							 } else {
+								  priorBMOU <- likBM(bmou, ssp, tree) # tree
+							 } 
 							 
 						} else if (r<update.freq[2]) {
-							  priormeans <- jive$lik_m(c(mmvn,smvn), msp, tree)
+							 priorMVN <- likMVN(c(mmvn, smvn), msp, tree)
 						} else {
-							  priorvar <- jive$lik_v(bmou, ssp, tree, map)
+							 if (model != "BM") {
+								  priorBMOU <- likOU(bmou, ssp, tree, map) #  tree, map
+							 } else {
+								  priorBMOU <- likBM(bmou, ssp, tree) # tree
+							 } # Likelihood level
 						}
 
 						# Posterior calculation
