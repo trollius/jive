@@ -84,10 +84,10 @@ jiveMCMC <- function(jive, log.file="jive_mcmc.log", sampling.freq=1000, print.f
 							
 							 if (runif(1) < 0.5) {
 								  # updating random 5 values from the vector of means 
-								  msp[ind] <- slidingWinUnconst(mspA[ind], ws$msp[ind]) 
+								  msp[ind] <- slidingWin(mspA[ind], ws$msp[ind]) 
 							 } else {
 								  # updating random 5 values from the vector of sigmas
-								  ssp[ind] <- slidingWin(sspA[ind], ws$ssp[ind], 100)  
+								  ssp[ind] <- abs(slidingWin(sspA[ind], ws$ssp[ind]))
 							 }
 						}
 						# update MVN parameters
@@ -95,16 +95,16 @@ jiveMCMC <- function(jive, log.file="jive_mcmc.log", sampling.freq=1000, print.f
 						
 							 if (runif(1) < 0.5){
 								  # updating mmvn - negative values allowed
-								  mmvn <- slidingWinUnconst(mmvnA, ws$mvn[1]) 
+								  mmvn <- slidingWin(mmvnA, ws$mvn[1]) 
 							 } else {
 								  # updating smvn
-								  smvn <- slidingWin(smvnA, ws$mvn[2], 100) 
+								  smvn <- abs(slidingWin(smvnA, ws$mvn[2]) )
 							 }
 							 
 						} else {# update BM parameters 
 												 
 							 ind <- sample(1:length(ws$svn), 1)
-							 bmou[ind] <- slidingWin(bmouA[ind], ws$svn[ind], 100) # updating bmou parameters
+							 bmou[ind] <- abs(slidingWin(bmouA[ind], ws$svn[ind])) # updating bmou parameters
 							 
 						}
 						
