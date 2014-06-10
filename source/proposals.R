@@ -1,25 +1,7 @@
 
 
-slidingWin <- function(i, d, M) {
-	# Slidign window proporal. 
-	# For details of the method see http://people.sc.fsu.edu/~pbeerli/BSC-5936/10-12-05/Lecture_13.pdf
-	#
-	# Args:
-	# 	i:  current value
-	#	d:  window size
-	#	M:  max allowed value
-	# 
-	# Returns:
-	#	Proposal value (integer).
-	
-	ii <- abs(i + (runif(length(i), 0, 1) - 0.5) * d) #MrBayes trick
-	# reflection at 0 and M
-	#if (ii>M) {ii=abs((M-(ii-M)))}
-	#if (ii>M) {ii=i}
-	return(ii)
-}
 
-slidingWinUnconst <- function(i, d) {
+slidingWin <- function(i, d) {
 	# Slidign window proporal unconstrained at maximum 
 	# For details of the method see http://people.sc.fsu.edu/~pbeerli/BSC-5936/10-12-05/Lecture_13.pdf
 	#

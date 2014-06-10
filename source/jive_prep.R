@@ -30,7 +30,7 @@ makeJive <- function(phy, traits, model="BM"){
 	}
 	
 	if (!(model %in% c("BM", "OU1", "OUM"))) {
-		stop("Only BM, OU1, and OUM models are supported")
+		stop("Only BM, OU1, and OUM models are supported for now.")
 	}
 	
 	ll <- list()
@@ -38,9 +38,9 @@ makeJive <- function(phy, traits, model="BM"){
 	
 	if (model %in% c("BM", "OU1")) { # this is needed to overcome phytools limitation about making simmap obj from a trait with a single regime
 		# td$phy$node.label <- rep("1", n - 1)
-		ll[['map']]    <- matrix(rep(1, (n * 2) - 2))
+		ll[['map']] <- matrix(rep(1, (n * 2) - 2))
 	} else {
-		ll[['map']]    <- relSim(td$phy)
+		ll[['map']] <- relSim(td$phy)
 	}
 			
 	ll[['traits']] <- td$data
@@ -50,12 +50,38 @@ makeJive <- function(phy, traits, model="BM"){
 	ll[['model']]  <- model
 	ll[['nreg']]   <- dim(td$phy)[2]
 	
-	class(ll) <- 'jive'
 	
 	return(ll)
 	
 }
 
 
+constrBM <- function(data){
+	
+	ll <- list()
+	pp <- initWinSize(data)
+	dd <- initParam(data)
+	
+	ll$lik	<- likBM # function call
+	ll$hp	<- hyperpBM # function call
+	ll$ws	<- pp # list
+	ll$init	<- dd # list
 
 
+	return(ll)
+
+}
+
+
+constrOU1 <- function(){
+
+
+
+}
+
+
+constrOUM <- function(){
+
+
+
+}
