@@ -47,7 +47,7 @@ source("jive_prep_dev.R")
 
 
 # MCMC MAIN ALGORITHM
-jiveMCMC <- function(jive, log.file="jive_mcmc.log", sampling.freq=1000, print.freq=100, 
+jiveMCMC <- function(jive, log.file="jive_mcmc.log", sampling.freq=1000, print.freq=1000, 
 				ncat=1, beta.param=0.3, ngen=5500000, burnin=0, update.freq=NULL, model="OU")
 {
 	
@@ -78,6 +78,7 @@ jiveMCMC <- function(jive, log.file="jive_mcmc.log", sampling.freq=1000, print.f
 
 							# initialize update frequencies
 							update.freq <- initUpdateFreq(update.freq)
+
 							
 							# initialize MCMC parameters
 							mspA  <- jive$lik$mspinit # initialize means for species
@@ -106,10 +107,10 @@ jiveMCMC <- function(jive, log.file="jive_mcmc.log", sampling.freq=1000, print.f
 							
 							 if (runif(1) < 0.5) {
 								  # updating random 5 values from the vector of means 
-								  msp[ind] <- slidingWin(jive$lik$mspinit[ind], jive$lik$mspws[ind]) 
+								  msp[ind] <- slidingWin(mspA[ind], jive$lik$mspws[ind]) 
 							 } else {
 								  # updating random 5 values from the vector of sigmas
-								  ssp[ind] <- abs(slidingWin(jive$lik$sspinit[ind], jive$lik$sspws[ind]))
+								  ssp[ind] <- abs(slidingWin(sspA[ind], jive$lik$sspws[ind]))
 							 }
 						}
 						# update MVN parameters
@@ -117,23 +118,26 @@ jiveMCMC <- function(jive, log.file="jive_mcmc.log", sampling.freq=1000, print.f
 						
 							 if (runif(1) < 0.5){
 								  # updating mmvn - negative values allowed
-								  mmvn <- slidingWin(jive$prior_mean$init[1], jive$prior_mean$ws[1]) 
+								  
+								  mmvn <- slidingWin(mmvnA, jive$prior_mean$ws[1]) 
+
 							 } else {
 								  # updating smvn
-								  smvn <- abs(slidingWin(jive$prior_mean$init[2], jive$prior_mean$ws[2]) )
+								  smvn <- abs(slidingWin(smvnA, jive$prior_mean$ws[2]) )
 							 }
 							 
 						} else {# update BMOU parameters 
 												 
 							 ind <- sample(1:length(jive$prior_var$ws), 1)
-							 bmou[ind] <- abs(slidingWin(jive$prior_var$init[ind], jive$prior_var$ws[ind])) # updating bmou parameters
+							 bmou[ind] <- abs(slidingWin(bmouA[ind], jive$prior_var$ws[ind])) # updating bmou parameters
 							 
 						}
 						
 
 						# Hyperpriors on all parameters level
 						# mean of MVN can be negative due to PCA - mean hprior
-											
+
+						
 						hprior_mean <- mapply(do.call, jive$prior_mean$hprior, lapply(c(mmvn, smvn), list))
 						hprior_var <- mapply(do.call, jive$prior_var$hprior, lapply(bmou, list))
 						hprior <- c(hprior_mean, hprior_var)

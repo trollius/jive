@@ -38,7 +38,7 @@ initUpdateFreq <- function(update.freq=NULL){
 	if (!is.null(update.freq)) {
 		update.freq	<- cumsum(update.freq/sum(update.freq))
 	} else {
-		update.freq	<- c(0.4,0.1,0.5)	
+		update.freq	<- cumsum(c(0.4,0.1,0.5))
 	}
 	
 	return(update.freq)
