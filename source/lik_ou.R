@@ -71,7 +71,7 @@ weigthMat <- function(n.reg, e, n.sp ){
 
 # input: pars - c(alpha,sig.sq,theta0,theta1...thetaN), sigma.val, tree and map (output from relSim)
 # does: calculate log-likelihood; see Butler and King 2004, appendix eq. A8 and A9 
-likOU <- function(pars, sigma.val, tree, map){ #sigma.val - vertical, theta - horizontal, pars - alpha, sig.sq, thetas
+likOU <- function(pars, x, tree, map){ #x - vertical, theta - horizontal, pars - alpha, sig.sq, thetas
 		
 	 # extract variables
 	 alpha  <- pars[1]
@@ -88,7 +88,7 @@ likOU <- function(pars, sigma.val, tree, map){ #sigma.val - vertical, theta - ho
 	 w     <- weigthMat(n.reg, e, n)
 	 DET   <- determinant(t.vcv, logarithm=T)
 
-	 log.lik.OU <- try((-n * log(2 * pi)/2 - (as.numeric(DET$modulus))/2 - (t(sigma.val - w%*%theta)%*%ginv(t.vcv)%*%(sigma.val - w%*%theta))/2),silent=T)
+	 log.lik.OU <- try((-n * log(2 * pi)/2 - (as.numeric(DET$modulus))/2 - (t(x - w%*%theta)%*%ginv(t.vcv)%*%(x - w%*%theta))/2),silent=T)
 	 
 	 #print(log.lik)
 	 if (is.na(log.lik.OU) | (class( log.lik.OU) == "try-error" )) {

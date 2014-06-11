@@ -1,9 +1,9 @@
 # input: pars=c(anc.mean,sig.sq), mean.val - trait values, tree - tree
 # does: return a log-likelihood of a classical BM-model (multivariate normal distribution)
 
-likMVN <- function(pars, mean.val, tree){#M - ancestral mean, sig.sq - sigma^2, mean.val - species means
+likMVN <- function(pars, x, tree){#M - ancestral mean, sig.sq - sigma^2, x - species means
 	
-	Y      <- as.matrix(mean.val)
+	Y      <- as.matrix(x)
 	M      <- pars[1] # ancestral mean
 	sig.sq <- pars[2] # sigma
 	vcv.m  <- vcv(tree)

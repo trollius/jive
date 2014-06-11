@@ -1,6 +1,6 @@
 
 
-make.hpfunction <-function(hpf="Uniform", hp.pars){
+make.hpfun <-function(hpf="Uniform", hp.pars){
 
 
 		if (hpf == "Uniform"){

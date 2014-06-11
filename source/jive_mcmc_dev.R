@@ -14,7 +14,7 @@ source("lik_multinorm.R")
 source("hpriors.R")
 source("proposals.R")
 source("utils.R")
-source("jive_prep.R")
+source("jive_prep_dev.R")
 
 
 # MCMC MAIN ALGORITHM
