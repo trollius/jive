@@ -26,7 +26,7 @@ library(geiger)
 					
 # traits - matrix, where lines are vector of observations for each species, with NA for no data.
 # phy - simmap object (OUM) or phylo object (for BM or OU1)
-make.jive <- function(simmap, traits, model_var="OU1", model_mean="BM", model_lik="MVN"){
+make.jive <- function(simmap, traits, model_var="OU1", model_mean="BM", model_lik="Multinorm"){
 
 	jive <- list()
 
@@ -51,8 +51,8 @@ make.jive <- function(simmap, traits, model_var="OU1", model_mean="BM", model_li
 		print(jive$data$nreg)
 		
 		
-		if (model_lik == "MVN") {
-			jive$lik$model 					<- likMVN
+		if (model_lik == "Multinorm") {
+			jive$lik$model 					<- likMultinorm
 			jive$lik$mspws 					<- initWinSizeMVN(jive$data$traits)$msp
 			jive$lik$sspws 					<- initWinSizeMVN(jive$data$traits)$ssp
 			jive$lik$mspinit				<- initParamMVN(jive$data$traits)$mspA
@@ -64,8 +64,8 @@ make.jive <- function(simmap, traits, model_var="OU1", model_mean="BM", model_li
 			jive$prior_mean$model 			<- likBM
 			jive$prior_mean$init  			<- initParamBM(jive$data$traits)
 			jive$prior_mean$ws	  			<- initWinSizeBM(jive$data$traits)
-			jive$prior_mean$hprior_m		<- make.hpfun("Uniform", c(-10000,10000))
-			jive$prior_mean$hprior_r		<- make.hpfun("Gamma", c(1.1,5))
+			jive$prior_mean$hprior$m		<- make.hpfun("Uniform", c(-10000,10000))
+			jive$prior_mean$hprior$r		<- make.hpfun("Gamma", c(1.1,5))
 		
 		}
 
@@ -74,10 +74,10 @@ make.jive <- function(simmap, traits, model_var="OU1", model_mean="BM", model_li
 			jive$prior_var$model 			<- likOU
 			jive$prior_var$init  			<- initParamOU(jive$data$traits, jive$data$nreg)
 			jive$prior_var$ws	  			<- initWinSizeOU(jive$data$traits, jive$data$nreg)
-			jive$prior_var$hprior_a			<- make.hpfun("Gamma", c(1.1,5))
-			jive$prior_var$hprior_m			<- make.hpfun("Gamma", c(1.1,5))
-			jive$prior_var$hprior_r			<- make.hpfun("Gamma", c(1.1,5))
-			jive$prior_var$hprior_t			<- make.hpfun("Gamma", c(1.1,5))
+			jive$prior_var$hprior$a			<- make.hpfun("Gamma", c(1.1,5))
+			jive$prior_var$hprior$m			<- make.hpfun("Gamma", c(1.1,5))
+			jive$prior_var$hprior$r			<- make.hpfun("Gamma", c(1.1,5))
+			jive$prior_var$hprior$t			<- make.hpfun("Gamma", c(1.1,5))
 		
 		}
 	}	

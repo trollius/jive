@@ -22,3 +22,4 @@ likMVN <- function(pars, x, tree){#M - ancestral mean, sig.sq - sigma^2, x - spe
 
 } 
 
+
