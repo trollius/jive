@@ -39,7 +39,7 @@ make.jive <- function(simmap, traits, model_var="OU1", model_mean="BM", model_li
 		if (model_var %in% c("BM", "OU1")) { # this is needed to overcome phytools limitation about making simmap obj from a trait with a single regime# td$phy$node.label <- rep("1", n - 1)
 			jive$data$map <- matrix(rep(1, ((dim(traits)[1]) * 2) - 2))
 		} else {
-			jive$data$map <- relSim(simmap)
+			jive$data$map <- relSim(simmap)$mapped.edge
 		}
 				
 		jive$data$traits 					<- traits
@@ -60,26 +60,41 @@ make.jive <- function(simmap, traits, model_var="OU1", model_mean="BM", model_li
 				
 		}
 		
-		if (model_mean == "BM") {
+		if (model_mean == "BM" ) {
 			jive$prior_mean$model 			<- likBM
-			jive$prior_mean$init  			<- initParamBM(jive$data$traits)
-			jive$prior_mean$ws	  			<- initWinSizeBM(jive$data$traits)
-			jive$prior_mean$hprior$m		<- make.hpfun("Uniform", c(-10000,10000))
-			jive$prior_mean$hprior$r		<- make.hpfun("Gamma", c(1.1,5))
+			jive$prior_mean$init  			<- initParamMBM(jive$data$traits)  # check
+			jive$prior_mean$ws	  			<- initWinSizeMBM(jive$data$traits)  # check
+			jive$prior_mean$hprior$r		<- make.hpfun("Gamma", c(1.1,5))		  # sigma
+			jive$prior_mean$hprior$m		<- make.hpfun("Uniform", c(-10000,10000)) # anc.mean
+
+		
+		}
+		
+		if (model_var == "BM" ) {
+			jive$prior_var$model 			<- likBM
+			jive$prior_var$init  			<- initParamVBM(jive$data$traits) # check
+			jive$prior_var$ws	  			<- initWinSizeVBM(jive$data$traits) # check
+			jive$prior_var$hprior$r			<- make.hpfun("Gamma", c(1.1,5)) # sigma
+			jive$prior_var$hprior$m			<- make.hpfun("Gamma", c(1.1,5)) # anc.mean
+
 		
 		}
 
 		
 		if (model_var == "OU1" || model_var == "OUM") {
 			jive$prior_var$model 			<- likOU
-			jive$prior_var$init  			<- initParamOU(jive$data$traits, jive$data$nreg)
-			jive$prior_var$ws	  			<- initWinSizeOU(jive$data$traits, jive$data$nreg)
-			jive$prior_var$hprior$a			<- make.hpfun("Gamma", c(1.1,5))
-			jive$prior_var$hprior$m			<- make.hpfun("Gamma", c(1.1,5))
-			jive$prior_var$hprior$r			<- make.hpfun("Gamma", c(1.1,5))
-			jive$prior_var$hprior$t			<- make.hpfun("Gamma", c(1.1,5))
+			jive$prior_var$init  			<- initParamVOU(jive$data$traits, jive$data$nreg)  # check
+			jive$prior_var$ws	  			<- initWinSizeVOU(jive$data$traits, jive$data$nreg)  # check
+			jive$prior_var$hprior$a			<- make.hpfun("Gamma", c(1.1,5)) # alpha
+			jive$prior_var$hprior$r			<- make.hpfun("Gamma", c(1.1,5)) # sigma
+			jive$prior_var$hprior$m			<- make.hpfun("Gamma", c(1.1,5)) # anc.mean
+			for (i in 1:jive$data$nreg){									 # theta
+				ti = paste("t",i,sep="")
+				jive$prior_var$hprior[[ti]]			<- make.hpfun("Gamma", c(1.1,5))
+			}
 		
 		}
+		
 	}	
 	return(jive)
 

@@ -87,6 +87,7 @@ relSim <- function(x) {
 	
 	x$mapped.edge <- t(apply(x$mapped.edge, 1, FUN=foo))
 	x$mapped.edge <- x$mapped.edge[, order(colnames(x$mapped.edge))]
+	
 	return(x)
 				
 }
@@ -96,28 +97,38 @@ relSim <- function(x) {
 initWinSizeMVN <- function (x){
 
 	ws		<- list()
-	xx		<- apply(x, 1, sd, na.rm = T) # CHECK IF ITS SD OR VAR
-	ws$msp	<- xx 
-	ws$ssp	<- xx
+	ws$msp	<- (apply(x, 1, sd, na.rm = T))/4 # <--------------- may need further tuning
+	ws$ssp	<- apply(x, 1, sd, na.rm = T) 
+	
 	return(ws)
 
 }
  
 # input is trait matrix, rows are species, cols - observations
-initWinSizeBM <- function(x){
+initWinSizeMBM <- function(x){
 	
 	xx <- sd(apply(x, 1, sd, na.rm = T)) # CHECK IF ITS SD OR VAR
-	ws <- c(2 * xx, xx) # anc.state of sigmas windows size, evol rate of sgimas window size
+	ws <- c(xx, 2 * xx) # evol rate of sigmas window size, anc.state of sigmas windows size, 
+
+	return(ws)
+	
+}
+
+initWinSizeVBM <- function(x){
+	
+	xx <- sd(apply(x, 1, sd, na.rm = T)) # CHECK IF ITS SD OR VAR
+	ws <- c(xx, 2 * xx) # evol rate of sigmas window size, anc.state of sigmas windows size,
 
 	return(ws)
 	
 }
 
 # input is trait matrix, rows are species, cols - observations
-initWinSizeOU <- function(x, nreg){
+initWinSizeVOU <- function(x, nreg){
 	
 	xx <- sd(apply(x, 1, sd, na.rm = T)) # CHECK IF ITS SD OR VAR
 	ws <- c(1.5, xx, 2 * xx, rep(2 * xx, nreg)) # alpha from max likelihood on observed std dev <------------------------ alpha parameter to adjust
+	
 	return(ws)
 	
 }
@@ -135,21 +146,32 @@ initParamMVN <- function (x){
 
 
 # initialize MCMC parameters				   
-initParamBM <- function(x){
+initParamMBM <- function(x){
 		
 	# initialize MCMC parameters
-	init <- c(mean(apply(x, 1, mean, na.rm = T)), var(apply(x, 1, mean, na.rm = T))) # could be a random number, initialize mean for MVN
+	init <- c(var(apply(x, 1, mean, na.rm = T)), mean(apply(x, 1, mean, na.rm = T))) 
+	
 	return(init)
 
-}				   
+}
+				   
+initParamVBM <- function(x){
+		
+	init <- c(runif(2, 0.5, 3)) # could be aither more realistic values such as means and sds of true data (
+	#init <- c(2.941516,2.139533,1.299683,1.364224) just a check
+	
+	return(init)
 
-# initialize MCMC parameters
-initParamOU <- function(x, nreg){
+}	
+
+# initialize MCMC parameters (order: alpha, anc.state, sig, theta1, theta2...
+initParamVOU <- function(x, nreg){
 		
 	init <- c(runif((nreg+3), 0.5, 3)) # could be aither more realistic values such as means and sds of true data
 	#init <- c(2.941516,2.139533,1.299683,1.364224) just a check
 	return(init)
 
 }	
+
 
 

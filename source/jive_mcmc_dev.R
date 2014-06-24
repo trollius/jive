@@ -83,8 +83,8 @@ jiveMCMC <- function(jive, log.file="jive_mcmc.log", sampling.freq=1000, print.f
 							# initialize MCMC parameters
 							mspA  <- jive$lik$mspinit # initialize means for species
 							sspA  <- jive$lik$sspinit # initialize sigma.sq for species
-							mmvnA <- jive$prior_mean$init[1] # could be a random number, initialize mean for MVN
-							smvnA <- jive$prior_mean$init[2] # could be a random number, initialize sigma.sq for MVN
+							smvnA <- jive$prior_mean$init[1] # could be a random number, initialize sigma.sq for MVN
+							mmvnA <- jive$prior_mean$init[2] # could be a random number, initialize mean for MVN
 							bmouA <- jive$prior_var$init # could be aither more realistic values such as means and sds of true data
 							 
 						}
@@ -119,11 +119,11 @@ jiveMCMC <- function(jive, log.file="jive_mcmc.log", sampling.freq=1000, print.f
 							 if (runif(1) < 0.5){
 								  # updating mmvn - negative values allowed
 								  
-								  mmvn <- slidingWin(mmvnA, jive$prior_mean$ws[1]) 
+								  mmvn <- slidingWin(mmvnA, jive$prior_mean$ws[2]) 
 
 							 } else {
 								  # updating smvn
-								  smvn <- abs(slidingWin(smvnA, jive$prior_mean$ws[2]) )
+								  smvn <- abs(slidingWin(smvnA, jive$prior_mean$ws[1]) )
 							 }
 							 
 						} else {# update BMOU parameters 
@@ -138,7 +138,7 @@ jiveMCMC <- function(jive, log.file="jive_mcmc.log", sampling.freq=1000, print.f
 						# mean of MVN can be negative due to PCA - mean hprior
 
 						
-						hprior_mean <- mapply(do.call, jive$prior_mean$hprior, lapply(c(mmvn, smvn), list))
+						hprior_mean <- mapply(do.call, jive$prior_mean$hprior, lapply(c(smvn, mmvn), list))
 						hprior_var <- mapply(do.call, jive$prior_var$hprior, lapply(bmou, list))
 						hprior <- c(hprior_mean, hprior_var)
 						#print(hprior)
@@ -154,14 +154,16 @@ jiveMCMC <- function(jive, log.file="jive_mcmc.log", sampling.freq=1000, print.f
 						
 							 Lik 		<- jive$lik$model(msp, ssp, jive$data$traits, jive$data$counts) # traits, counts
 							 #print(Lik)
-							 Prior_mean <- jive$prior_mean$model(c(mmvn,smvn), msp, jive$data$tree) # tree Conditional prior level
+							 Prior_mean <- jive$prior_mean$model(c(smvn, mmvn), msp, jive$data$tree) # tree Conditional prior level
 							 #print(paste("Prior mean ", Prior_mean))
+							 
 							 Prior_var 	<- jive$prior_var$model(bmou, ssp, jive$data$tree, jive$data$map)
 							 #print(paste("Prior var ", Prior_var))
 							 										 
 						} else if (r<update.freq[2]) {
-							 Prior_mean <- jive$prior_mean$model(c(mmvn, smvn), msp, jive$data$tree)
+							 Prior_mean <- jive$prior_mean$model(c(smvn, mmvn), msp, jive$data$tree)
 						} else {
+							 
 							 Prior_var 	<- jive$prior_var$model(bmou, ssp, jive$data$tree, jive$data$map)
 						}
 
@@ -201,15 +203,15 @@ jiveMCMC <- function(jive, log.file="jive_mcmc.log", sampling.freq=1000, print.f
 							cat("generation",'\t',"posterior",'\n')
 							if (model == "BM"){
 							  cat(sprintf("%s\t", c("real.iter", "postA", "log.lik", 
-										  "Prior_mean", "Prior_var",  "sumHpriorA", "mbm_anc.st", 
-										  "mbm_sig.sq", "vbm_sig.sq", "vbm_anc.st", 
+										  "Prior_mean", "Prior_var",  "sumHpriorA", 
+										  "mbm_sig.sq", "mbm_anc.st",  "vbm_sig.sq", "vbm_anc.st", 
 										  paste("sp",seq(1:length(jive$data$counts)),"_mean",sep=""), 
 										  paste("sp",seq(1:length(jive$data$counts)),"_var",sep=""),
 										  "acc", "temperature")), "\n", append=FALSE, file=log.file)
 							} else {
 							  cat(sprintf("%s\t", c("real.iter", "postA", "log.lik", 
-										  "Prior_mean", "Prior_var",  "sumHpriorA", "mbm_anc.st", 
-										  "mbm_sig.sq", "vou_alpha", "vou_sig.sq", "vou_anc.st", 
+										  "Prior_mean", "Prior_var",  "sumHpriorA", 
+										  "mbm_sig.sq", "mbm_anc.st", "vou_alpha", "vou_sig.sq", "vou_anc.st", 
 										  paste("vou_theta", seq(1:(length(bmouA)-3)),sep=""),
 										  paste("sp",seq(1:length(jive$data$counts)),"_mean",sep=""),
 										  paste("sp",seq(1:length(jive$data$counts)),"_var",sep=""),
@@ -220,7 +222,7 @@ jiveMCMC <- function(jive, log.file="jive_mcmc.log", sampling.freq=1000, print.f
 						
 						if (real.iter %% sampling.freq == 0 & real.iter >= burnin) {
 							 cat(sprintf("%s\t", c(real.iter, postA, sum(LikA),
-							 Prior_meanA, Prior_varA, sum(hpriorA), mmvnA, smvnA,
+							 Prior_meanA, Prior_varA, sum(hpriorA), smvnA, mmvnA, 
 							 bmouA, mspA, sspA, (acc/iteration), temperature)),
 							 "\n", append=TRUE, file=log.file) 
 						}
