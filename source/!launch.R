@@ -37,23 +37,37 @@ jive.obj$nreg<-dim(res$simmap)[2]
 str(jive.obj)
 
 
-
-
+# ------------- BM
+source("jive_mcmc_dev.R")
 phy1 <- jive.obj$tree
 tra1 <- jive.obj$traits
 rownames(tra1) <- phy1$tip.label
+
+my.jive <- make.jive(phy1, tra1,  model_var="BM", model_mean="BM")
+jiveMCMC(my.jive, log.file="jive_mcmc_BM_xxx.log")
+
+# ------------- OU1
 source("jive_mcmc_dev.R")
+phy1 <- jive.obj$tree
+tra1 <- jive.obj$traits
+rownames(tra1) <- phy1$tip.label
+
 my.jive <- make.jive(phy1, tra1,  model_var="OU1", model_mean="BM")
+jiveMCMC(my.jive, log.file="jive_mcmc_OU1.log")
 
-
+# ------------- OUM
+source("jive_mcmc_dev.R")
+phy1 <- jive.obj$tree
+tra1 <- jive.obj$traits
+rownames(tra1) <- phy1$tip.label
 
 n = length(phy1$tip.label)
 states=c(rep(1,n%/%2),rep(2,(n - n%/%2)))
 names(states)=phy1$tip.label
 sim=make.simmap(phy1,states, model="SYM", nsim=1) # OUM model: output will be somehow random with same params due to states + simmap. 
 my.jive <- make.jive(sim, tra1,  model_var="OUM", model_mean="BM")
-
 jiveMCMC(my.jive, log.file="jive_mcmc_OUM.log")
+
 
 
 ll[["traits"]]<-td$traits
