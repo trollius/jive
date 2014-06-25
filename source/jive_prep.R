@@ -29,13 +29,15 @@ library(geiger)
 make.jive <- function(simmap, traits, model_var="OU1", model_mean="BM", model_lik="Multinorm"){
 
 	jive <- list()
-
+	
 	if (name.check(simmap, traits) != "OK") {
 	
-		print ("Species do not match")
+		stop("Species do not match in tree and traits")
 	
 	} else {
 
+		traits<-traits[simmap$tip.label,]
+		
 		if (model_var %in% c("BM", "OU1")) { # this is needed to overcome phytools limitation about making simmap obj from a trait with a single regime# td$phy$node.label <- rep("1", n - 1)
 			jive$data$map <- matrix(rep(1, ((dim(traits)[1]) * 2) - 2))
 		} else {
@@ -78,10 +80,10 @@ make.jive <- function(simmap, traits, model_var="OU1", model_mean="BM", model_li
 			jive$prior_var$hprior$m			<- make.hpfun("Gamma", c(1.1,5)) # anc.mean
 			jive$prior_var$header			<- c("real.iter", "postA", "log.lik", "Prior_mean", "Prior_var",  "sumHpriorA", 
 												"mbm_sig.sq", "mbm_anc.st",  "vbm_sig.sq", "vbm_anc.st", 
-												paste("sp",seq(1:length(jive$data$counts)),"_mean",sep=""), 
-												paste("sp",seq(1:length(jive$data$counts)),"_var",sep=""),
+												paste(rownames(jive$data$traits), "_m", sep=""),
+												paste(rownames(jive$data$traits), "_v", sep=""),
 												"acc", "temperature")
-		
+	
 		}
 
 		
@@ -99,8 +101,8 @@ make.jive <- function(simmap, traits, model_var="OU1", model_mean="BM", model_li
 			jive$prior_var$header			<- c("real.iter", "postA", "log.lik", "Prior_mean", "Prior_var",  "sumHpriorA", 
 												"mbm_sig.sq", "mbm_anc.st", "vou_alpha", "vou_sig.sq", "vou_anc.st", 
 												paste("vou_theta", seq(1:jive$data$nreg),sep=""),
-												paste("sp",seq(1:length(jive$data$counts)),"_mean",sep=""),
-												paste("sp",seq(1:length(jive$data$counts)),"_var",sep=""),
+												paste(rownames(jive$data$traits), "_m", sep=""),
+												paste(rownames(jive$data$traits), "_v", sep=""),
 												"acc", "temperature")
 		
 		}

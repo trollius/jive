@@ -22,7 +22,7 @@ source("lik_multinorm.R")
 source("hpriors.R")
 source("proposals.R")
 source("utils.R")
-source("jive_prep_dev.R")
+source("jive_prep.R")
 
 # how often obtain
 # temporary tesing for MCMC
@@ -47,7 +47,7 @@ my.jive <- make.jive(phy1, tra1,  model_var="BM", model_mean="BM")
 jiveMCMC(my.jive, log.file="jive_mcmc_BM_xxx.log")
 
 # ------------- OU1
-source("jive_mcmc_dev.R")
+source("jive_mcmc.R")
 phy1 <- jive.obj$tree
 tra1 <- jive.obj$traits
 rownames(tra1) <- phy1$tip.label
