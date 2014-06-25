@@ -30,7 +30,7 @@ proc.jive<-function(log.file = "jive_mcmc_OU1.log", n = 50, stat=jive.mode, burn
 		
 		# apply function to calculate summary
 		ll$prior_pars  = apply(l[b[1]:b[2], c(s[1]:s[2])], 2, stat) # mode for prior level pars
-		ll$mean_pars    = apply(l[b[1]:b[2], c(s[3]:(s[3] + n))], 2, mean) # mean for lik level pars (mode is too slow)
+		ll$mean_pars    = apply(l[b[1]:b[2], c(s[3]:(s[3] + n - 1))], 2, mean) # mean for lik level pars (mode is too slow)
 		ll$var_pars    = apply(l[b[1]:b[2], c((s[3] + n):s[4])], 2, mean)
 		names(ll$mean_pars) = sub("_mean","",names(ll$mean_pars))
 		names(ll$var_pars) = sub("_var","",names(ll$var_pars))
@@ -43,8 +43,8 @@ proc.jive<-function(log.file = "jive_mcmc_OU1.log", n = 50, stat=jive.mode, burn
 		ll$prior_hpd.l = data.frame(my.hpd)[c(s[1]:s[2]), 1]
 		ll$prior_hpd.u = data.frame(my.hpd)[c(s[1]:s[2]), 2]
 		
-		ll$mean_hpd.l   = data.frame(my.hpd)[c(s[3]:(s[3] + n)), 1]
-		ll$mean_hpd.u   = data.frame(my.hpd)[c(s[3]:(s[3] + n)), 2]
+		ll$mean_hpd.l   = data.frame(my.hpd)[c(s[3]:(s[3] + n - 1)), 1]
+		ll$mean_hpd.u   = data.frame(my.hpd)[c(s[3]:(s[3] + n - 1)), 2]
 		
 		ll$var_hpd.l   = data.frame(my.hpd)[c((s[3] + n):s[4]), 1]
 		ll$var_hpd.u   = data.frame(my.hpd)[c((s[3] + n):s[4]), 2]
@@ -78,4 +78,13 @@ plot.jive <- function(tree, proc.jive, regime, cols=c("blue", "green"), cex.labe
 
 plot.jive(phy1, my.l, regime)
 
+foo <- function(x){
+	#plot(density(x[1],x[2]), axes = FALSE, xlab=NULL, ylab=NULL, main=NULL)
+	plot(density(x[1],x[2]), main="", xlab="", ylab="", xlim=c(340,360), xaxt="n", yaxt="n", axes=F)
+	abline(v=350)
+
+}
+
+par(mfrow=c(5,5))
+apply(dd, 1, foo)
 
