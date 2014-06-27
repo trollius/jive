@@ -26,10 +26,10 @@ getTreeCoords <- function(tree, xwidth=1, yheight=0.4){
 	h = vcv(tree)[1] # height
 	n = dim(vcv(tree))[2] # num spec
 
-	d$xxl <- rep(h, n)
+	d$xxl <- rep(h, n) + 0.5
 	d$xxu <- rep(h+xwidth, n)
 	
-	d$yyl <- 1:n - yheight
+	d$yyl <- 1:n # - yheight
 	d$yyu <- d$yyl + 2*yheight
 	
 	return(d)
@@ -59,5 +59,38 @@ for (i in 1:10){
 	
 }
 
+
+require(TeachingDemos)
+
+plot(t1, show.tip.label = FALSE)
+getTreeCoords <- function(tree, xwidth=1, yheight=0.4){
+	
+	d = list()
+	h = vcv(tree)[1] # height
+	n = dim(vcv(tree))[2] # num spec
+
+	d$xxl <- rep(h, n) + 0.5
+	d$xxu <- rep(h+xwidth, n)
+	
+	d$yyl <- 1:n # - yheight
+	d$yyu <- d$yyl + 2*yheight
+	
+	return(d)
+}
+rr1 <- getTreeCoords(t1)
+
+for (i in 1:10){
+	if (i < 4){
+		par(mgp=c(0, 0, 0))
+		subplot( hist(rnorm(100, sd=0.1),xlab='',ylab='',main='', yaxt="n", xlim=c(-2,2), tck=-0.05, cex.axis=0.5), rr1$xxl[i], rr1$yyl[i], size=c(0.5,0.5))
+		
+	}
+	else{
+		subplot( hist(rnorm(100, sd=1),xlab='',ylab='',main='', yaxt="n",  xlim=c(-2,2), tck=-0.05, cex.axis=0.5), rr1$xxl[i], rr1$yyl[i], size=c(0.5,0.5))
+	}
+}
+
+
+subplot( hist(rnorm(100),xlab='',ylab='',main='', xaxt="n", yaxt="n", axes=F), rr1$xxl[i], rr1$yyl[i], size=c(0.5,0.5))
 
 
