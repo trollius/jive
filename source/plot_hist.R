@@ -59,17 +59,25 @@ for (i in 1:10){
 	
 }
 
-
+require(ape)
 require(TeachingDemos)
 
-plot(t1, show.tip.label = FALSE)
-getTreeCoords <- function(tree, xwidth=1, yheight=0.4){
+layout( matrix(c(1,4,4,2,4,4,3,4,4), 3, 3, byrow = TRUE))
+
+hist(rnorm(1000,25,3),xlab='',ylab='',main='')
+hist(rnorm(1000,25,3),xlab='',ylab='',main='')
+hist(rnorm(1000,25,3),xlab='',ylab='',main='')
+#par(mar=c(5.1,4.1,4.1,2.1))
+plot(t1, show.tip.label = TRUE, label.offset = 2, x.lim=c(0, 12.5), cex=0.9)
+#tiplabels(t1$tip.label, frame = "none")
+
+getTreeCoords <- function(tree, offs = 1.2, xwidth=1, yheight=0.4){
 	
 	d = list()
 	h = vcv(tree)[1] # height
 	n = dim(vcv(tree))[2] # num spec
 
-	d$xxl <- rep(h, n) + 0.5
+	d$xxl <- rep(h, n) + offs
 	d$xxu <- rep(h+xwidth, n)
 	
 	d$yyl <- 1:n # - yheight
@@ -82,15 +90,18 @@ rr1 <- getTreeCoords(t1)
 for (i in 1:10){
 	if (i < 4){
 		par(mgp=c(0, 0, 0))
-		subplot( hist(rnorm(100, sd=0.1),xlab='',ylab='',main='', yaxt="n", xlim=c(-2,2), tck=-0.05, cex.axis=0.5), rr1$xxl[i], rr1$yyl[i], size=c(0.5,0.5))
-		
+		d <- density(rnorm(100, mean=1.5, sd=0.1))
+		subplot( plot( d ,xlab='',ylab='',main='', yaxt="n",xaxt="n", bty="n", xlim=c(-2,2), col="blue"), rr1$xxl[i], rr1$yyl[i], size=c(0.5,0.5))
+
 	}
 	else{
-		subplot( hist(rnorm(100, sd=1),xlab='',ylab='',main='', yaxt="n",  xlim=c(-2,2), tck=-0.05, cex.axis=0.5), rr1$xxl[i], rr1$yyl[i], size=c(0.5,0.5))
+		subplot( plot( density(rnorm(100, mean=0, sd=0.5)),xlab='',ylab='',main='', yaxt="n", xaxt="n", bty="n", xlim=c(-2,2)), rr1$xxl[i], rr1$yyl[i], size=c(0.5,0.5))
 	}
 }
 
 
-subplot( hist(rnorm(100),xlab='',ylab='',main='', xaxt="n", yaxt="n", axes=F), rr1$xxl[i], rr1$yyl[i], size=c(0.5,0.5))
+
+subplot(polygon(d, col="red", border="gray",xlab='',ylab='',main='', xaxt="n", yaxt="n"), 11.2, 1.8, size=c(0.5,0.5))
+subplot(plot( density(rnorm(1000)),xlab='',ylab='',main='', xaxt="n", yaxt="n", axes=F), 10.5, 4, size=c(0.5,0.5))
 
 
