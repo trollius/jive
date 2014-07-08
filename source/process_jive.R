@@ -10,11 +10,18 @@ jive.mode<-function(x){
 	return(y)#print(y)
 }
 
-proc.jive<-function(log.file = "jive_mcmc_OU1.log", n = 50, stat=jive.mode, burning = 0, probHPD = 0.95, ...){
+proc.jive<-function(log.file = "jive_mcmc_OU1.log", n = 50, stat=jive.mode, burning = 0, probHPD = 0.95, verbose=TRUE, ...){
 		
+		# calculate mode
+		jive.mode<-function(x){
+			y=hdr(x, all.modes=F)$mode
+			return(y)#print(y)
+		}
+		
+		# supress R obsessive desire to plot scientific notation
 		options(scipen=999)
-		ll 	= list()
-		l	= read.csv(log.file, stringsAsFactors=FALSE, header=T, sep="\t")
+		ll 	= list() # empty list to store results
+		l	= read.csv(log.file, stringsAsFactors=FALSE, header=T, sep="\t") # read in csv
 		g	= dim(l)[1] # number of generations
 		p   = dim(l)[2] # number of parameters
 		
@@ -34,7 +41,8 @@ proc.jive<-function(log.file = "jive_mcmc_OU1.log", n = 50, stat=jive.mode, burn
 		ll$var_pars    = apply(l[b[1]:b[2], c((s[3] + n):s[4])], 2, mean)
 		names(ll$mean_pars) = sub("_mean","",names(ll$mean_pars))
 		names(ll$var_pars) = sub("_var","",names(ll$var_pars))
-
+	
+		
 		# calculate mcmc and hpd (coda package)
 		my.mcmc        = mcmc(data=l[b[1]:b[2], 1:(p-1)])
 		my.hpd         = data.frame(HPDinterval(my.mcmc), prob = probHPD, ...)
@@ -57,11 +65,18 @@ proc.jive<-function(log.file = "jive_mcmc_OU1.log", n = 50, stat=jive.mode, burn
 		
 		names(ll$var_hpd.l) <- names(ll$var_pars)
 		names(ll$var_hpd.u) <- names(ll$var_pars)	
-		
+			
+		if (verbose==TRUE){
+			ss <- list()
+			ss$prior_pars  <- ll$prior_pars
+			ss$prior_hpd.l <- ll$prior_hpd.l 
+			ss$prior_hpd.u <- ll$prior_hpd.u 
+			return(ss)
+		}
 		return(ll)
 
-
 }
+
 
 plot.jive <- function(tree, proc.jive, regime, cols=c("blue", "green"), cex.label=0.7, cex.circle=2, lab.off = 0.025, ladder=TRUE, ...){
 
